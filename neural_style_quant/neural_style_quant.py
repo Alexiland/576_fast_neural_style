@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 import torch.onnx
+from PIL import Image
 
 import utils
 from transformer_net_quant import TransformerNet
@@ -146,6 +147,7 @@ def stylize(args):
                 output = torch.onnx._export(style_model, content_image, args.export_onnx).cpu()
             else:
                 output = style_model(content_image).cpu()
+
     utils.save_image(args.output_image, output[0])
 
 
