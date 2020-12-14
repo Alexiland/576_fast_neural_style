@@ -51,9 +51,17 @@ class VGG(nn.Module):
     def __init__(self, vgg_name):
         super(VGG, self).__init__()
         self.features = self._make_layers(cfg[vgg_name])
-        self.classifier = nn.Linear(512, 10)
+        self.classifier = nn.Sequential(
+            nn.Linear(512 * 7 * 7, 4096),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(4096, 4096),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(4096, 100),
+        )
 
-    def forward(self, x, num_bits=8, num_grad_bits=8):
+    def forward(self, x, num_bits=0, num_grad_bits=0):
         for layer in self.features.modules():
             if isinstance(layer, QConv2d):
                 layer.num_bits = num_bits
@@ -80,7 +88,10 @@ class VGG(nn.Module):
 class Vgg16(torch.nn.Module):
     def __init__(self, requires_grad=False):
         super(Vgg16, self).__init__()
-        vgg_pretrained_features = VGG('VGG16').features
+        pretrained_net = VGG('VGG16')
+        checkpoint = torch.load("./logs/model_best88.pth.tar")
+        pretrained_net.load_state_dict(checkpoint['state_dict'])
+        vgg_pretrained_features = pretrained_net.features
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -102,7 +113,7 @@ class Vgg16(torch.nn.Module):
                 param.requires_grad = False
 
 
-    def forward(self, X, num_bits=8, num_grad_bits=8):
+    def forward(self, X, num_bits=0, num_grad_bits=0):
         for slice in [self.slice1, self.slice2, self.slice3, self.slice4]:
             for layer in slice.modules():
                 if isinstance(layer, QConv2d):

@@ -29,7 +29,7 @@ def save_checkpoint(state, is_best, filepath):
         shutil.copyfile(os.path.join(filepath, 'checkpoint.pth.tar'), os.path.join(filepath, 'model_best.pth.tar'))
 
 
-def DataPreprocess(batchsize=64, test_batch_size=256, usegpu=True, seed=1, DATASET='cifar10'):
+def DataPreprocess(batchsize=64, test_batch_size=256, usegpu=True, seed=1, DATASET='cifar100'):
     torch.manual_seed(seed)
     memorysetting = False
     cuda = usegpu and torch.cuda.is_available()
